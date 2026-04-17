@@ -65,7 +65,19 @@ STATIC_WHITELIST = {
 
 To test the detector, we can deploy an ARP spoofing attack using Python and `scapy`. The following script simulates the behavior of tools like `arpspoof`.
 
-### 1. The Attacker Script (`attacker.py`)
+### 1. Environment Setup & Reconnaissance
+
+The attack is executed using an Ubuntu Virtual Machine hosted on VirtualBox, bridging the connection into the local subnet.
+
+![VirtualBox Setup](images/virtual%20box%20ubuntu.png)
+
+Before launching the attack, the attacker verifies reachability to the target machine (the victim):
+```bash
+ping 10.3.83.128
+```
+![Ping Test](images/ping%20test.png)
+
+### 2. The Attacker Script (`attacker.py`)
 This script crafts forged `Ether / ARP` packets and broadcasts them towards a specific target, falsely claiming that it (the attacker) holds the router's IP address.
 
 ```python
@@ -102,9 +114,9 @@ if __name__ == "__main__":
     main()
 ```
 
-### 2. Execution & Live Detection Flow
+### 3. Execution & Live Detection Flow
 
-Here is the exact flow of the attack and detection within an environment (For instance, using an Ubuntu VirtualBox attacker crossing paths with a Windows victim):
+Here is the exact flow of the attack and detection within the environment (Ubuntu VirtualBox attacker crossing paths with a Windows victim):
 
 #### Attacker Side (Ubuntu VM):
 The attacker runs the script to send continuous fake ARP replies toward the designated IP address, declaring a forged MAC address (`de:ad:be:ef:00:01`).
@@ -126,6 +138,16 @@ Alerts are saved in `arp_alerts.log` in the following format:
 ```
 2026-04-17 10:30:15  WARNING  SPOOF ip=192.168.1.5 known_mac=aa:bb:cc:dd:ee:11 claimed_mac=ff:ee:dd:cc:bb:22
 ```
+
+## 👨‍💻 Author & Ownership
+
+**Developed by: Garvit (@garvits01)**
+
+This project was natively developed, coded, and tested as an original cybersecurity demonstration and active defense tool. 
+
+## ⚖️ License
+
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details. This explicitly stakes your open-source copyright and permits others to study your work while crediting you natively.
 
 ## ⚠️ Disclaimer
 

@@ -1,3 +1,8 @@
+"""
+author: Garvit (@garvits01)
+description: ARP Spoof Detector - Main Entry Point
+"""
+
 import argparse
 from scapy.all import get_if_list
 from detector import ARPSpoofDetector
