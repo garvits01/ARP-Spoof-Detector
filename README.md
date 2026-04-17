@@ -111,14 +111,14 @@ The attacker runs the script to send continuous fake ARP replies toward the desi
 ```bash
 sudo python3 attacker.py -t 10.3.83.128 -g 10.3.0.1
 ```
-*(Reference: Attacker begins blasting packets from their terminal into the network)*
+![Ubuntu VM Attacker Script](images/ubuntu_attack.png)
 
 #### Victim Side / Detector (Windows):
 Meanwhile, the `ARP Spoof Detector` script is quietly monitoring network traffic. As soon as the malicious packets hit, the local caching system recognizes that the MAC address for Gateway `10.3.0.1` has abruptly changed from its known value to the fake `de:ad:be:ef:00:01`.
 
 The console immediately flags the violation in **bright red**, outputting the claimed IP, the historically known MAC, the fraudulent MAC, and a summary of the packed trigger.
 
-*(Reference: Multiple alerts populate the screen reading `[!] ARP SPOOF DETECTED`)*
+![Windows Detector Alert](images/victim_alert.png)
 
 ## 📝 Logging
 
